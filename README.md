@@ -2,7 +2,7 @@
 
 ## Android 一个自动多渠道打包的gradle plugin（参考tencent VasDolly）
 
-### 实现原理  参考链接：https://github.com/Tencent/VasDolly/wiki/VasDolly%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86
+### 实现原理  [参考链接](https://github.com/Tencent/VasDolly/wiki/VasDolly%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86)
 
 基于Groovy/Java的gradle插件开发，用于项目发布到各应用渠道的多渠道打包。
 
