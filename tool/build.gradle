@@ -1,0 +1,12 @@
+apply plugin: 'java'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.tools.build:apksig:3.2.1'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+targetCompatibility = rootProject.javaVersion
+sourceCompatibility = rootProject.javaVersion

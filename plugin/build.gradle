@@ -1,0 +1,29 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            //plugin 导出路径
+            pom.groupId = 'org.royole'
+            pom.artifactId = 'channel-plugin'
+            pom.version = '1.0.1'
+            repository(url: uri('D:/maven release/1'))
+        }
+    }
+}
+
+compileGroovy {
+    targetCompatibility = rootProject.javaVersion
+    sourceCompatibility = rootProject.javaVersion
+    options.encoding = "UTF-8"
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:3.0.0'
+    compile project(':tool')    //此处必须为compile而不是implementation，否则tool library无法一起编译
+}
