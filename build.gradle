@@ -10,7 +10,6 @@ ext{
     javaVersion = JavaVersion.VERSION_1_8
 }
 
-
 buildscript {
     repositories {
         repositories {
@@ -24,7 +23,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
+        classpath 'com.android.tools.build:gradle:3.2.1'
     }
 }
 
@@ -38,6 +37,9 @@ allprojects {
             url uri('D:\\maven release\\1')
         }
     }
+}
+uploadArchives{
+
 }
 
 task clean(type: Delete) {

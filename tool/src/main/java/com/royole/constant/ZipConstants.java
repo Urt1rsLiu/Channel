@@ -5,7 +5,7 @@ package com.royole.constant;
  * @date 2018/10/9 11:31 
  */
 public interface ZipConstants {
-    public static final int CHANNEL_BLOCK_ID = 0x881155ff;  //the id data of id-value that represents channel information
+
 
     public static final int ZIP64_EOCD_LOCATOR_SIZE = 20;
     public static final int ZIP64_EOCD_LOCATOR_SIG_REVERSE_BYTE_ORDER = 0x504b0607;
@@ -23,6 +23,7 @@ public interface ZipConstants {
 
     static final int V2_SIGN_BLOCK_MIN_SIZE = 32; //min bytes number of v2 signature block
     static final int V2_SIGN_BLOCK_ID = 0x7109871a;  //id of signature value at id-value block in V2 mode
+    public static final int CHANNEL_BLOCK_ID = 0x881155ff;  //id of channel information value at id-value block in V2 mode
 
     static final int  V2_MAGIC_SIZE = 16;    //bytes number of v2 magic block
     static final long V2_MAGIC_LOW =  0x20676953204b5041L;

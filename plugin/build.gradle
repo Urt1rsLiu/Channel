@@ -1,7 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
 
-
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -21,9 +20,9 @@ compileGroovy {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation gradleApi()
-    implementation localGroovy()
-    implementation 'com.android.tools.build:gradle:3.0.0'
-    compile project(':tool')    //此处必须为compile而不是implementation，否则tool library无法一起编译
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile gradleApi()
+    compile localGroovy()
+    implementation 'com.android.tools.build:gradle:3.2.1'
+    compile 'org.royole:channel-plugin:'
 }

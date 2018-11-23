@@ -2,13 +2,17 @@ package com.royole.util;
 
 import com.android.apksig.ApkVerifier;
 import com.android.apksig.apk.ApkFormatException;
+import com.royole.IdValueWriter.IdValueWriter;
+import com.royole.constant.ChannelConfig;
 import com.royole.constant.ZipConstants;
+import com.royole.data.ApkSectionInfo;
 import com.royole.data.Pair;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,8 +27,18 @@ public class V2ChannelUtil {
      * add channel Information to apk in v2 signature mode
      * V2 signature block locates on the fore of Central Directory block
      */
-    public static void addChannelByV2() {
+    public static void addChannelByV2(ApkSectionInfo apkSectionInfo, File destApk, String channel) throws Exception {
+        if (destApk == null || channel == null || channel.length() <= 0) {
+            throw new RuntimeException("addChannelByV2 , param invalid, channel = " + channel + " , destApk = " + destApk);
+        }
+        if (!destApk.exists() || !destApk.isFile() || destApk.length() <= 0) {
+            throw new RuntimeException("addChannelByV2 , destApk invalid");
+        }
 
+        byte[] buffer = channel.getBytes(ChannelConfig.CONTENT_CHARSET);
+        ByteBuffer channelByteBuffer = ByteBuffer.wrap(buffer);
+        channelByteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        IdValueWriter.addIdValue(apkSectionInfo, destApk, ZipConstants.CHANNEL_BLOCK_ID, channelByteBuffer);
     }
 
     /**
@@ -53,10 +67,21 @@ public class V2ChannelUtil {
      *
      * @return
      */
-    public static boolean verifySignatureByV2(File apkFile) {
+    public static boolean verifySignatureByV2(File apkFile) throws Exception {
+        ApkVerifier.Builder apkVerifierBuilder = new ApkVerifier.Builder(apkFile);
+        ApkVerifier apkVerifier = apkVerifierBuilder.build();
+        ApkVerifier.Result result = apkVerifier.verify();
+        boolean verified = result.isVerified();
+        System.out.println("verified : " + verified);
+        if (verified) {
+            System.out.println("Verified using v1 scheme (JAR signing): " + result.isVerifiedUsingV1Scheme());
+            System.out.println("Verified using v2 scheme (APK Signature Scheme v2): " + result.isVerifiedUsingV2Scheme());
+            if (result.isVerifiedUsingV2Scheme()) {
+                return true;
+            }
+        }
         return false;
     }
-
 
 
     /**
@@ -115,18 +140,60 @@ public class V2ChannelUtil {
             int nextEntryPosition = (int) len + pairs.position();
             //读取4个字节的id
             int id = pairs.getInt();
-            idValues.put(id, VerifyUtil.getByteBuffer(pairs, (int) len - 4));
+            idValues.put(id, ByteBufferUtil.getByteBuffer(pairs, (int) len - 4));
             //判断id是否为V2签名信息的id
-            if (ZipConstants.V2_SIGN_BLOCK_ID == id){
+            if (ZipConstants.V2_SIGN_BLOCK_ID == id) {
                 System.out.println("find V2 signature block Id : " + ZipConstants.V2_SIGN_BLOCK_ID);
             }
             pairs.position(nextEntryPosition);
         }
-        if (idValues.isEmpty()){
+        if (idValues.isEmpty()) {
             throw new Exception("not have Id-Value Pair in APK Signing Block entry #" + entryCount);
         }
         return idValues;
     }
 
+    public static ByteBuffer generateApkSigningBlock(Map<Integer, ByteBuffer> idValueMap) {
+        if (idValueMap == null || idValueMap.isEmpty()) {
+            throw new RuntimeException("getNewApkV2SchemeBlock , id value pair is empty");
+        }
+        // FORMAT:
+        // uint64:  size (excluding this field)
+        // repeated ID-value pairs:
+        //     uint64:           size (excluding this field)
+        //     uint32:           ID
+        //     (size - 4) bytes: value
+        // uint64:  size (same as the one above)
+        // uint128: magic
+        long totalLength = 16 + 8;
+        for (Map.Entry<Integer, ByteBuffer> entry : idValueMap.entrySet()) {
+            ByteBuffer byteBuffer = entry.getValue();
+            totalLength = totalLength + 8 + 4 + byteBuffer.remaining();
+        }
+        ByteBuffer newV2SignatureBlock = ByteBuffer.allocate((int) (totalLength + 8));
+        newV2SignatureBlock.order(ByteOrder.LITTLE_ENDIAN);
+        //1.write size (excluding this field)
+        newV2SignatureBlock.putLong(totalLength);
+
+        for (Map.Entry<Integer, ByteBuffer> entry : idValueMap.entrySet()) {
+            ByteBuffer byteBuffer = entry.getValue();
+            //2.1 write length of id-value
+            newV2SignatureBlock.putLong(byteBuffer.remaining() + 4);
+            //2.2 write id
+            newV2SignatureBlock.putInt(entry.getKey());
+            //2.3 write value
+            newV2SignatureBlock.put(byteBuffer.array(), byteBuffer.arrayOffset() + byteBuffer.position(), byteBuffer.remaining());
+        }
+        //3.write size (same as the one above)
+        newV2SignatureBlock.putLong(totalLength);
+        //4. write magic
+        newV2SignatureBlock.putLong(ZipConstants.V2_MAGIC_LOW);
+        newV2SignatureBlock.putLong(ZipConstants.V2_MAGIC_HEIGHT);
+        if (newV2SignatureBlock.remaining() > 0) {
+            throw new RuntimeException("generateNewApkV2SchemeBlock error");
+        }
+        newV2SignatureBlock.flip();
+        return newV2SignatureBlock;
+    }
 
 }

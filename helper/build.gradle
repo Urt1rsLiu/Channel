@@ -9,7 +9,7 @@ android {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.1"
     }
     buildTypes {
         debug {
@@ -32,9 +32,9 @@ uploadArchives {
     repositories {
         mavenDeployer {
             //plugin 导出路径
-//            pom.groupId = 'org.royole'
+            pom.groupId = 'org.royole'
             pom.artifactId = 'channel-helper'
-//            pom.version = '1.0.1'
+            pom.version = '1.0.1'
             repository(url: uri('D:/maven release/1'))
         }
     }
@@ -43,5 +43,5 @@ uploadArchives {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
-    compile project(":tool")
+    compile project(':tool')
 }

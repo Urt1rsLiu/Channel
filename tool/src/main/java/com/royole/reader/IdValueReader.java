@@ -1,9 +1,5 @@
 package com.royole.reader;
 
-/**
- * @author Hongzhi.Liu 2014302580200@whu.edu.cn
- * @date 2018/10/11
- */
 
 import com.royole.constant.ChannelConfig;
 import com.royole.util.V2ChannelUtil;
@@ -14,8 +10,11 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Map;
 
+
+
 /**
- * 对V2 签名块的id-value通过id读取value
+ * @author Hongzhi.Liu
+ * @date 2018/10/11
  */
 public class IdValueReader {
     public static String getStringValueById(File channelFile, int id) {

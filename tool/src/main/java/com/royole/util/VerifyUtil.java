@@ -5,7 +5,6 @@ import com.royole.data.Pair;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -17,7 +16,7 @@ import java.nio.ByteOrder;
 /**
  * utils class for verifying apk file after generating channel apk
  */
-class VerifyUtil {
+public class VerifyUtil {
 
     /**
      * get EOCD record block and its offset
@@ -32,6 +31,24 @@ class VerifyUtil {
             throw new Exception("Not an APK file: ZIP End of Central Directory record not found");
         }
         return eocdAndOffsetInFile;
+    }
+
+    /**
+     * get central directory block
+     *
+     * @param apk
+     * @param centralDirOffset
+     * @param length
+     * @return
+     */
+    public static Pair<ByteBuffer, Long> getCentralDir(RandomAccessFile apk, long centralDirOffset, int length) throws Exception {
+        ByteBuffer byteBuffer = ByteBufferUtil.getByteBuffer(apk, centralDirOffset, length);
+        return Pair.create(byteBuffer, centralDirOffset);
+    }
+
+    public static Pair<ByteBuffer, Long> getContentEntryBlock(RandomAccessFile apk, int length) throws Exception {
+        ByteBuffer byteBuffer = ByteBufferUtil.getByteBuffer(apk, 0, length);
+        return Pair.create(byteBuffer, 0L);
     }
 
     /**
@@ -54,7 +71,7 @@ class VerifyUtil {
         }
         // Read the magic and offset in file from the footer section of the block:
         // * 8 bytes:   size of block
-        // * 16 bytes: magic
+        // * 16 bytes:  magic
         //分配24个字节的ByteBuffer读取magic block和底部的size block
         ByteBuffer footer = ByteBuffer.allocate(24);
         footer.order(ByteOrder.LITTLE_ENDIAN);
@@ -156,31 +173,5 @@ class VerifyUtil {
         }
     }
 
-    /**
-     * 从ByteBuffer的当前Position往后读取指定大小
-     * @param source
-     * @param size
-     * @return
-     */
-    public static ByteBuffer getByteBuffer(ByteBuffer source,int size) throws Exception{
-        if (size < 0){
-            throw new IllegalArgumentException("size: " + size);
-        }
-        int oldLimit = source.limit();
-        int position = source.position();
-        int limit = position + size;
-        if (limit > oldLimit){
-            throw new BufferUnderflowException();
-        }
-        source.limit(limit);
-        try {
-            ByteBuffer result = source.slice();
-            result.order(source.order());
-            source.position(limit);
-            return result;
-        }finally {
-            source.limit(oldLimit);
-        }
 
-    }
 }

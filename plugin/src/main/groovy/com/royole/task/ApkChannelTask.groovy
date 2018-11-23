@@ -4,9 +4,11 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
 import com.royole.constant.ChannelConfig
 import com.royole.constant.SignatureMode
+import com.royole.data.ApkSectionInfo
 import com.royole.extension.ChannelExtension
 import com.royole.util.FileUtil
 import com.royole.util.V1ChannelUtil
+import com.royole.util.V2ChannelUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
@@ -192,14 +194,16 @@ class ApkChannelTask extends DefaultTask {
     }
 
     /**
-     * generate apk with V2 signature
+     * generate apk with V2&V1 signature
      */
     private void generateV2ChannelApk() {
+        ApkSectionInfo apkSectionInfo = new ApkSectionInfo(baseApk)
         for (int i = 0; i < channelList.size(); i++) {
             String channelApkName = initChannelApkName()
             File destApk = new File(outputDir, channelApkName)
             FileUtil.copyTo(baseApk, destApk)
-            V2ChannelUtil.addChannelByV2()
+            //V1ChannelUtil.addChannelByV1(destApk, channel)
+            V2ChannelUtil.addChannelByV2(apkSectionInfo, destApk, channelList.get(i))
             if (!channelExtension.fastMode) {
                 //校验渠道信息
                 if (V2ChannelUtil.verifyChannelByV2(destApk)) {
@@ -238,7 +242,8 @@ class ApkChannelTask extends DefaultTask {
         StringBuilder stringBuilder = new StringBuilder()
         stringBuilder.append(ChannelConfig.APP_NAME)
         stringBuilder.append("_")
-        stringBuilder.append("v" + propVersionName.toString())
+        stringBuilder.append("v")
+        stringBuilder.append(propVersionName.toString())
         stringBuilder.append("_")
         stringBuilder.append(variant.dirName)
         stringBuilder.append("_")

@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 /**
- * @author Hongzhi.Liu 2014302580200@whu.edu.cn
+ * @author Hongzhi.Liu
  * @date 2018/10/11
  */
 public class ChannelReader {
@@ -29,7 +29,6 @@ public class ChannelReader {
             }
             mChannelCache = channel;
         }
-
         return mChannelCache;
     }
 
