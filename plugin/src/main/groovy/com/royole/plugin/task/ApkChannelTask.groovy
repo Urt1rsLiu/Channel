@@ -1,14 +1,14 @@
-package com.royole.task
+package com.royole.plugin.task
 
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
-import com.royole.constant.ChannelConfig
-import com.royole.constant.SignatureMode
-import com.royole.data.ApkSectionInfo
-import com.royole.extension.ChannelExtension
-import com.royole.util.FileUtil
-import com.royole.util.V1ChannelUtil
-import com.royole.util.V2ChannelUtil
+import com.royole.tool.constant.ChannelConfig
+import com.royole.tool.constant.SignatureMode
+import com.royole.tool.data.ApkSectionInfo
+import com.royole.plugin.extension.ChannelExtension
+import com.royole.plugin.util.FileUtil
+import com.royole.tool.util.V1ChannelUtil
+import com.royole.tool.util.V2ChannelUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
@@ -64,7 +64,6 @@ class ApkChannelTask extends DefaultTask {
     def channel() {
         checkParameter()
         checkSignature()
-        println('outputDir:  ' + outputDir.absolutePath)
         channelList.each { String a ->
             println a
         }
@@ -198,8 +197,9 @@ class ApkChannelTask extends DefaultTask {
      */
     private void generateV2ChannelApk() {
         ApkSectionInfo apkSectionInfo = new ApkSectionInfo(baseApk)
+        println outputDir
         for (int i = 0; i < channelList.size(); i++) {
-            String channelApkName = initChannelApkName()
+            String channelApkName = initChannelApkName(i)
             File destApk = new File(outputDir, channelApkName)
             FileUtil.copyTo(baseApk, destApk)
             //V1ChannelUtil.addChannelByV1(destApk, channel)
@@ -245,8 +245,6 @@ class ApkChannelTask extends DefaultTask {
         stringBuilder.append("v")
         stringBuilder.append(propVersionName.toString())
         stringBuilder.append("_")
-        stringBuilder.append(variant.dirName)
-        stringBuilder.append("_")
         stringBuilder.append(propVersionCode)
         stringBuilder.append("_")
         stringBuilder.append(index)
@@ -254,6 +252,7 @@ class ApkChannelTask extends DefaultTask {
         stringBuilder.append(channelList.get(index))
         stringBuilder.append("_")
         stringBuilder.append("sign")
+        stringBuilder.append(".apk")
 
         println "-------channel plugin:${stringBuilder}---------"
         return stringBuilder.toString()

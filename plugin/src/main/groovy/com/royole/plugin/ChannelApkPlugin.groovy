@@ -1,8 +1,8 @@
-package com.royole
+package com.royole.plugin
 
 import com.android.build.gradle.api.BaseVariant
-import com.royole.extension.ChannelExtension
-import com.royole.task.ApkChannelTask
+import com.royole.plugin.extension.ChannelExtension
+import com.royole.plugin.task.ApkChannelTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException

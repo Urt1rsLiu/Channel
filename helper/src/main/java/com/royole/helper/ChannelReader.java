@@ -4,9 +4,9 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
 
-import com.royole.constant.ChannelConfig;
-import com.royole.reader.IdValueReader;
-import com.royole.util.V1ChannelUtil;
+import com.royole.tool.constant.ZipConstants;
+import com.royole.tool.reader.IdValueReader;
+import com.royole.tool.util.V1ChannelUtil;
 
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -41,7 +41,7 @@ public class ChannelReader {
     private static String getChannelByV2(Context context) {
         String apkPath = getApkPath(context);
         File channelFile = new File(apkPath);
-        String channel = IdValueReader.getStringValueById(channelFile, ChannelConfig.CHANNEL_BLOCK_ID);
+        String channel = IdValueReader.getStringValueById(channelFile, ZipConstants.CHANNEL_BLOCK_ID);
         return channel;
     }
 

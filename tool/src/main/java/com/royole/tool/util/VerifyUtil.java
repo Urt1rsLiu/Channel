@@ -1,7 +1,7 @@
-package com.royole.util;
+package com.royole.tool.util;
 
-import com.royole.constant.ZipConstants;
-import com.royole.data.Pair;
+import com.royole.tool.constant.ZipConstants;
+import com.royole.tool.data.Pair;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -129,6 +129,7 @@ public class VerifyUtil {
      */
     public static long getCentralDirOffset(ByteBuffer eocd, long eocdOffset) throws Exception {
         // Look up the offset of ZIP Central Directory.
+        System.out.println("-----------eocd offset:     " + eocdOffset);
         long centralDirOffset = ZipUtil.getZipEocdCentralDirectoryOffset(eocd);
         if (centralDirOffset >= eocdOffset) {
             throw new Exception("ZIP Central Directory offset out of range: " + centralDirOffset
@@ -136,9 +137,9 @@ public class VerifyUtil {
         }
         //在eocd中获得central directory的size大小并作校验
         long centralDirSize = ZipUtil.getZipEocdCentralDirectorySizeBytes(eocd);
+        System.out.println("-----------central dir offset:  " + centralDirOffset + "      central dir size: " + centralDirSize);
         if (centralDirOffset + centralDirSize != eocdOffset) {
-            throw new Exception("ZIP Central Directory is not immediately followed by End of Central"
-                    + " Directory");
+            throw new Exception("ZIP Central Directory is not immediately followed by End of Central Directory");
         }
         return centralDirOffset;
     }

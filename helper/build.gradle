@@ -43,5 +43,5 @@ uploadArchives {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
-    compile project(':tool')
+    api 'org.royole:channel-tool:1.0.1'
 }

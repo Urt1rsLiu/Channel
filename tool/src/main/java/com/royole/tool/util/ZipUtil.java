@@ -1,8 +1,8 @@
-package com.royole.util;
+package com.royole.tool.util;
 
 
-import com.royole.constant.ZipConstants;
-import com.royole.data.Pair;
+import com.royole.tool.constant.ZipConstants;
+import com.royole.tool.data.Pair;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -85,6 +85,7 @@ public class ZipUtil {
         maxCommentSize = (int) Math.min(maxCommentSize, fileSize - ZipConstants.ZIP_EOCD_REC_MIN_SIZE);
 
         ByteBuffer buffer = ByteBuffer.allocate(ZipConstants.ZIP_EOCD_REC_MIN_SIZE + maxCommentSize);
+
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         //begin reading from the most possible position of EoCD record starts
         long bufOffsetInFile = fileSize - buffer.capacity();
@@ -94,6 +95,7 @@ public class ZipUtil {
         int eocdOffsetInBuf = findZipEndOfCentralDirectoryRecord(buffer);
         if (eocdOffsetInBuf == -1) {
             // No EoCD record found in the buffer
+            System.out.println("--------------eocdOffsetInBuf is " + eocdOffsetInBuf);
             return null;
         }
         // EoCD found
@@ -117,9 +119,14 @@ public class ZipUtil {
         }
         int maxCommentLength = Math.min(eocdSize - ZipConstants.ZIP_EOCD_REC_MIN_SIZE, ZipConstants.BIT_16_MAX_VALUE);
         int eocdWithEmptyCommentStartPosition = eocdSize - ZipConstants.ZIP_EOCD_REC_MIN_SIZE;
-        for (int expectedCommentLength = 0; expectedCommentLength < maxCommentLength; expectedCommentLength++) {
+        for (int expectedCommentLength = 0; expectedCommentLength <= maxCommentLength; expectedCommentLength++) {
             int eocdStartPos = eocdWithEmptyCommentStartPosition - expectedCommentLength;
-
+            if (ZipConstants.ZIP_EOCD_REC_SIG == eocdContents.getInt(eocdStartPos)) {
+                int actualCommentLength = getUnsignedInt16(eocdContents, eocdStartPos + ZipConstants.ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET);
+                if (actualCommentLength == expectedCommentLength){
+                    return eocdStartPos;
+                }
+            }
         }
         return -1;
     }
@@ -152,7 +159,12 @@ public class ZipUtil {
         }
     }
 
-    public static long getUnsignedInt32(ByteBuffer buffer, int offset) {
+
+    public static int getUnsignedInt16(ByteBuffer buffer, int offset) {
         return buffer.getShort(offset) & 0xffff;
+    }
+
+    public static long getUnsignedInt32(ByteBuffer buffer, int offset) {
+        return buffer.getInt(offset) & 0xffffffffL;
     }
 }

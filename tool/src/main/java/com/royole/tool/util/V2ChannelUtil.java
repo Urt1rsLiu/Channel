@@ -1,12 +1,12 @@
-package com.royole.util;
+package com.royole.tool.util;
 
 import com.android.apksig.ApkVerifier;
 import com.android.apksig.apk.ApkFormatException;
-import com.royole.IdValueWriter.IdValueWriter;
-import com.royole.constant.ChannelConfig;
-import com.royole.constant.ZipConstants;
-import com.royole.data.ApkSectionInfo;
-import com.royole.data.Pair;
+import com.royole.tool.IdValueWriter.IdValueWriter;
+import com.royole.tool.constant.ChannelConfig;
+import com.royole.tool.constant.ZipConstants;
+import com.royole.tool.data.ApkSectionInfo;
+import com.royole.tool.data.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +29,11 @@ public class V2ChannelUtil {
      */
     public static void addChannelByV2(ApkSectionInfo apkSectionInfo, File destApk, String channel) throws Exception {
         if (destApk == null || channel == null || channel.length() <= 0) {
-            throw new RuntimeException("addChannelByV2 , param invalid, channel = " + channel + " , destApk = " + destApk);
+            throw new Exception("addChannelByV2 , param invalid, channel = " + channel + " , destApk = " + destApk);
         }
         if (!destApk.exists() || !destApk.isFile() || destApk.length() <= 0) {
-            throw new RuntimeException("addChannelByV2 , destApk invalid");
+            System.out.println(destApk + " not found");
+            throw new Exception("addChannelByV2 , destApk invalid");
         }
 
         byte[] buffer = channel.getBytes(ChannelConfig.CONTENT_CHARSET);

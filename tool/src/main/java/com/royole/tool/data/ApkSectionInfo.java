@@ -1,7 +1,7 @@
-package com.royole.data;
+package com.royole.tool.data;
 
-import com.royole.util.VerifyUtil;
-import com.royole.util.ZipUtil;
+import com.royole.tool.util.VerifyUtil;
+import com.royole.tool.util.ZipUtil;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -55,7 +55,6 @@ public class ApkSectionInfo {
             this.contentEntry = VerifyUtil.getContentEntryBlock(apk, (int) apkV2SignBlock.getSecond().longValue());
 
             this.checkParamters();
-            System.out.println("baseApk : " + baseApk.getAbsolutePath() + "\nApkSectionInfo = " + this);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("cant read eocd from apk file");

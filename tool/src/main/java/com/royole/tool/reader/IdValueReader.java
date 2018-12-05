@@ -1,8 +1,8 @@
-package com.royole.reader;
+package com.royole.tool.reader;
 
 
-import com.royole.constant.ChannelConfig;
-import com.royole.util.V2ChannelUtil;
+import com.royole.tool.constant.ChannelConfig;
+import com.royole.tool.util.V2ChannelUtil;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;

@@ -1,4 +1,4 @@
-package com.royole.constant;
+package com.royole.tool.constant;
 
 /**
  * @author Hongzhi Liu  2014302580200@whu.edu.cn
@@ -8,9 +8,14 @@ public interface ZipConstants {
 
 
     public static final int ZIP64_EOCD_LOCATOR_SIZE = 20;
-    public static final int ZIP64_EOCD_LOCATOR_SIG_REVERSE_BYTE_ORDER = 0x504b0607;
+    public static final int ZIP64_EOCD_LOCATOR_SIG_REVERSE_BYTE_ORDER = 0x504b0607;   // judge whether apk file is Zip64 file
+
+
+
+    int ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET = 20;
 
     public static final int BIT_16_MAX_VALUE = 0xffff;      //max int value in 2 bytes
+    int ZIP_EOCD_REC_SIG = 0x06054b50;    //eocd sign block
     public static final int ZIP_EOCD_REC_MIN_SIZE = 22;     //Eocd min size
 
     public static final int SHORT_LENGTH = 2;                   //the number of bytes of short type data

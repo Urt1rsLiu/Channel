@@ -1,4 +1,4 @@
-package com.royole.constant;
+package com.royole.tool.constant;
 
 /**
  * @author Hongzhi Liu  2014302580200@whu.edu.cn

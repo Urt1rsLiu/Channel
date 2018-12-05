@@ -3,7 +3,7 @@ apply plugin: 'maven'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.tools.build:apksig:3.2.1'
+    compile 'com.android.tools.build:apksig:2.3.3'
 }
 
 uploadArchives {
@@ -11,7 +11,7 @@ uploadArchives {
         mavenDeployer {
             //plugin 导出路径
             pom.groupId = 'org.royole'
-            pom.artifactId = 'channel_tool'
+            pom.artifactId = 'channel-tool'
             pom.version = '1.0.1'
             repository(url: uri('D:/maven release/1'))
         }
@@ -21,6 +21,6 @@ uploadArchives {
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+    targetCompatibility = rootProject.javaVersion
+    sourceCompatibility = rootProject.javaVersion
 }
-targetCompatibility = rootProject.javaVersion
-sourceCompatibility = rootProject.javaVersion

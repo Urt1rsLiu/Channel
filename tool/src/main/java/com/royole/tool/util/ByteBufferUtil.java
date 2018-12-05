@@ -1,4 +1,4 @@
-package com.royole.util;
+package com.royole.tool.util;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;

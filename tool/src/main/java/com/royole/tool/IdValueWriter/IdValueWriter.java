@@ -1,9 +1,9 @@
-package com.royole.IdValueWriter;
+package com.royole.tool.IdValueWriter;
 
 import com.android.apksig.internal.zip.ZipUtils;
-import com.royole.constant.ZipConstants;
-import com.royole.data.ApkSectionInfo;
-import com.royole.util.V2ChannelUtil;
+import com.royole.tool.constant.ZipConstants;
+import com.royole.tool.data.ApkSectionInfo;
+import com.royole.tool.util.V2ChannelUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -234,6 +234,7 @@ public class IdValueWriter {
 
     public static ApkSectionInfo getApkSectionInfo(File baseApk, boolean lowMemory) throws Exception {
         if (baseApk == null || !baseApk.exists() || !baseApk.isFile()) {
+            System.out.println("----------error: apksectioninfo is null-------");
             return null;
         }
         return new ApkSectionInfo(baseApk);

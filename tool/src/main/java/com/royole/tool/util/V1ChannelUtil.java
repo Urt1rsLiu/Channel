@@ -1,10 +1,10 @@
-package com.royole.util;
+package com.royole.tool.util;
 
 import com.android.apksig.ApkVerifier;
 import com.android.apksig.apk.ApkFormatException;
-import com.royole.constant.ChannelConfig;
-import com.royole.constant.ZipConstants;
-import com.royole.data.Pair;
+import com.royole.tool.constant.ChannelConfig;
+import com.royole.tool.constant.ZipConstants;
+import com.royole.tool.data.Pair;
 
 import java.io.DataInput;
 import java.io.DataOutput;

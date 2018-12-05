@@ -2,12 +2,11 @@
 ext{
     group = 'org.royole'
     version = '1.0.1'
-
+    javaVersion = JavaVersion.VERSION_1_8
     minSdkVersion = 14
     compileSdkVersion = 26
     targetSdkVersion = compileSdkVersion
     buildToolsVersion = '26.0.2'
-    javaVersion = JavaVersion.VERSION_1_8
 }
 
 buildscript {
@@ -23,7 +22,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.0.0'
     }
 }
 
@@ -37,9 +36,6 @@ allprojects {
             url uri('D:\\maven release\\1')
         }
     }
-}
-uploadArchives{
-
 }
 
 task clean(type: Delete) {

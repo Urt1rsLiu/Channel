@@ -1,4 +1,4 @@
-package com.royole.util
+package com.royole.plugin.util
 
 /**
  * @author Hongzhi Liu Liu13407134075@gmail.com

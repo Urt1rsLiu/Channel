@@ -1,4 +1,4 @@
-package com.royole.data;
+package com.royole.tool.data;
 
 /**
  * A key-value data structure to record file block content and its offset

@@ -1,12 +1,7 @@
-package com.royole.extension
+package com.royole.plugin.extension
 
-import com.royole.constant.ChannelConfig
 import org.gradle.api.Project
-
-/**
- * @author Hongzhi Liu  2014302580200@whu.edu.cn
- * @date 2018/9/29 14:04 
- */
+import com.royole.tool.constant.ChannelConfig
 
 /**
  * 配置渠道包信息
