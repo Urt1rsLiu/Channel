@@ -8,8 +8,6 @@ android {
     defaultConfig {
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
-        versionCode 1
-        versionName "1.0.1"
     }
     buildTypes {
         debug {
@@ -28,14 +26,31 @@ android {
     }
 }
 
+// 打包源文件
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+// 要生成的artifacts
+artifacts {
+    archives sourceJar
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
             //plugin 导出路径
-            pom.groupId = 'org.royole'
-            pom.artifactId = 'channel-helper'
-            pom.version = '1.0.1'
-            repository(url: uri('D:/maven release/1'))
+            pom.project {
+                version rootProject.VERSION_ID
+                artifactId 'channel-helper'
+                groupId rootProject.GROUP_ID
+                packaging rootProject.POM_PACKAGING
+                description rootProject.POM_DESCRIPTION
+            }
+            repository(url: rootProject.NEXUS_REPOSITORY_URL){
+                authentication(userName: rootProject.NEXUS_USERNAME, password: rootProject.NEXUS_PASSWORD)
+            }
         }
     }
 }
@@ -43,5 +58,5 @@ uploadArchives {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
-    api 'org.royole:channel-tool:1.0.1'
+    api "$rootProject.GROUP_ID:channel-tool:$rootProject.VERSION_ID"
 }

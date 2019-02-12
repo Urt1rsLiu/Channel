@@ -6,14 +6,32 @@ dependencies {
     compile 'com.android.tools.build:apksig:2.3.3'
 }
 
+// 打包源文件
+task sourceJar(type: Jar) {
+    from sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+// 要生成的artifacts
+artifacts {
+    archives sourceJar
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
             //plugin 导出路径
-            pom.groupId = 'org.royole'
-            pom.artifactId = 'channel-tool'
-            pom.version = '1.0.1'
-            repository(url: uri('D:/maven release/1'))
+            //plugin 导出路径
+            pom.project {
+                version rootProject.VERSION_ID
+                artifactId 'channel-tool'
+                groupId rootProject.GROUP_ID
+                packaging rootProject.POM_PACKAGING
+                description rootProject.POM_DESCRIPTION
+            }
+            repository(url: rootProject.NEXUS_REPOSITORY_URL){
+                authentication(userName: rootProject.NEXUS_USERNAME, password: rootProject.NEXUS_PASSWORD)
+            }
         }
     }
 }
