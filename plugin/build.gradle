@@ -1,31 +1,103 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'org.springframework.boot'
+
+//文档目录
+def DOC_DIR = "../javadoc/channel-plugin/" + rootProject.VERSION_ID + "/"
+//文档标题
+def DOC_TITLE = "channel-plugin"
+
+
+jar{
+//    manifest{
+//        attributes("Class-Path": "apktool.jar")
+//    }
+//    from ('build/classes')
+    from project.zipTree('libs/apksigner.jar')
+    from project.zipTree('libs/apktool.jar')
+    include ('/**/org.royole.channel.properties')
+    include ('com/royole/plugin/**/*.class')
+//    include ('com/android/apksig/**/*.class')
+//    include ('com/android/apksigner/**/*.class')
+    include ('brut/**/*.class')
+//    include ('com/google/common/**/*.class')
+}
 
 // 打包源文件
-task sourceJar(type: Jar) {
-    from sourceSets.main.java.srcDirs
+task sourcesJar(type: Jar, dependsOn: classes) {
+    from sourceSets.main.allSource
     classifier = 'sources'
 }
 
-// 要生成的artifacts
-artifacts {
-    archives sourceJar
+sourceSets {
+    main {
+        groovy {
+            srcDir 'src/main/groovy'
+        }
+    }
 }
 
+//task javadocs(type: Javadoc) {
+//    doFirst {
+//        //先删除
+//        delete(DOC_DIR)
+//        println "delete dir = " + DOC_DIR
+//    }
+//
+//    source = sourceSets.main.allSource
+//    classpath += project.files(getBootClasspath().join(File.pathSeparator))
+//    destinationDir = file(DOC_DIR)
+//    exclude '**/R.html', '**/R.*.html', '**/index.html'
+//    failOnError false
+//    options {
+//        encoding "UTF-8"
+//        charSet 'UTF-8'
+//        author true
+//        version true
+//        links "http://docs.oracle.com/javase/7/docs/api"
+//        title DOC_TITLE
+//    }
+//}
+
+
+//androidJavadocs task执行之前先添加第三方的依赖进来, 否则会找不到相关的jar包
+//afterEvaluate {
+//    javadocs.classpath += files(android.libraryVariants.collect { variant ->
+//        variant.getJavaCompiler().classpath.files
+//    })
+//}
+
+//configurations {
+//    deployerJars
+//}
+
+
+// 要生成的artifacts
+artifacts {
+    archives sourcesJar
+//    archives javadocsJar
+}
+
+def maven_local_home = "Maven Local"
+def MAVEN_LOCAL_URL = "file://" + new File(rootProject.getProjectDir().parentFile, maven_local_home).absolutePath
 
 uploadArchives {
     repositories {
         mavenDeployer {
             //plugin 导出路径
+//            configuration = configurations.deployerJars
             pom.groupId = rootProject.GROUP_ID
             pom.artifactId = 'channel-plugin'
             pom.version = rootProject.VERSION_ID
-            repository(url:rootProject.NEXUS_REPOSITORY_URL){
-                authentication(userName: rootProject.NEXUS_USERNAME, password: rootProject.NEXUS_PASSWORD)
-            }
+//            pom.packaging = 'aar'
+//            repository(url:rootProject.NEXUS_REPOSITORY_URL){
+//                authentication(userName: rootProject.NEXUS_USERNAME, password: rootProject.NEXUS_PASSWORD)
+//            }
+            repository(url: MAVEN_LOCAL_URL)
         }
     }
 }
+
 
 compileGroovy {
     targetCompatibility = rootProject.javaVersion
@@ -33,11 +105,17 @@ compileGroovy {
     options.encoding = "UTF-8"
 }
 
+compileJava {
+    options.encoding = "UTF-8"
+}
+
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile files("libs/apktool.jar")
+    compile files("libs/apksigner.jar")
     compile gradleApi()
     compile localGroovy()
-    implementation 'com.android.tools.build:gradle:3.0.0'
+    implementation 'com.android.tools.build:gradle:3.0.1'
     testImplementation 'junit:junit:4.12'
-    compile "$rootProject.GROUP_ID:channel-tool:$rootProject.VERSION_ID"
 }

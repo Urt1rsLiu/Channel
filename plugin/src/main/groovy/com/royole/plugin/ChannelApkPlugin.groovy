@@ -1,6 +1,7 @@
 package com.royole.plugin
 
 import com.android.build.gradle.api.BaseVariant
+import com.android.builder.core.BuilderConstants
 import com.royole.plugin.extension.ChannelExtension
 import com.royole.plugin.task.ApkChannelTask
 import org.gradle.api.Plugin
@@ -44,8 +45,9 @@ class ChannelApkPlugin implements Plugin<Project> {
             /**
              * 前面判断project是否使用com.android.application插件，若使用，则能找到android.applicationVariants
              * 一般variant 分两种：debug 和release
-             * 这里创建两个task，对应打debug 和release 包
+             * 这里进行了优化，只为buildType为release 的variant 创建task
              */
+
             project.android.applicationVariants.all { BaseVariant variant ->
                 // 遍历获得各个variant
 //                int variantAmount = variant.outputs.size()
@@ -91,12 +93,18 @@ class ChannelApkPlugin implements Plugin<Project> {
                 variantName = variant.name.capitalize()
                 println "----------dirName : ${dirName}-------------"
                 println "----------variantName : ${variantName}-------------"
-                mApkChannelTask = mProject.tasks.create("channel${variantName} ", ApkChannelTask)
-                mApkChannelTask.setGroup("channel")
-                mApkChannelTask.dependsOn variant.assemble
-                mApkChannelTask.variant = variant
-                mApkChannelTask.channelExtension = mChannelExtension
-                mApkChannelTask.channelList = mChannelInfoList
+                println "----------buildType : ${variant.buildType.name}-------------"
+
+
+                if (BuilderConstants.RELEASE.equalsIgnoreCase(variant.buildType.name)){
+                    mApkChannelTask = mProject.tasks.create("channel${variantName} ", ApkChannelTask)
+                    mApkChannelTask.setGroup("channel")
+//                    mApkChannelTask.dependsOn variant.assemble
+                    mApkChannelTask.variant = variant
+                    mApkChannelTask.channelExtension = mChannelExtension
+                    mApkChannelTask.channelList = mChannelInfoList
+                }
+
             }
         }
     }

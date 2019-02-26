@@ -1,1 +1,1 @@
-include ':plugin', ':helper', ':tool'
+include ':plugin'

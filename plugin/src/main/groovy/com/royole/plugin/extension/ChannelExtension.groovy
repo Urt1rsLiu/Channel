@@ -1,7 +1,7 @@
 package com.royole.plugin.extension
 
+import com.royole.plugin.constants.ChannelConfig
 import org.gradle.api.Project
-import com.royole.tool.constant.ChannelConfig
 
 /**
  * 配置渠道包信息
@@ -65,7 +65,7 @@ class ChannelExtension {
         println "execute constructor"
         fastMode = false
         channelFile = new File(project.getRootDir(), ChannelConfig.DEFAULT_CHANNEL_FILE_NAME)
-        baseOutputDir = new File(project.getRootDir(), ChannelConfig.defaultOutputDirName)
+        baseOutputDir = new File(project.getRootDir(), ChannelConfig.DEFAULT_OUTPUT_DIR_NAME)
     }
 
 }

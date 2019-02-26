@@ -2,20 +2,17 @@ package com.royole.plugin.task
 
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
-import com.royole.tool.constant.ChannelConfig
-import com.royole.tool.constant.SignatureMode
-import com.royole.tool.data.ApkSectionInfo
+import com.royole.plugin.constants.ChannelConfig
+import com.royole.plugin.constants.SignatureMode
 import com.royole.plugin.extension.ChannelExtension
-import com.royole.plugin.util.FileUtil
-import com.royole.tool.util.V1ChannelUtil
-import com.royole.tool.util.V2ChannelUtil
+import com.royole.plugin.util.ApkToolUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 /**
- * @author Hongzhi Liu  2014302580200@whu.edu.cn
+ * @author Hongzhi Liu
  * @date 2018/9/29 14:12
  *
  * 该task 根据 project 的variant 打各类包，分为debug 和release 包
@@ -48,6 +45,7 @@ class ApkChannelTask extends DefaultTask {
     /**
      * 输出的子目录(debug/release)
      */
+
     private File outputDir
 
     /**
@@ -67,10 +65,8 @@ class ApkChannelTask extends DefaultTask {
         channelList.each { String a ->
             println a
         }
-
-        generateChannelApk()
-
-
+        println "-----------rebuildApk2222------------"
+        rebuildApk()
     }
 
     /**
@@ -98,7 +94,7 @@ class ApkChannelTask extends DefaultTask {
         //4.确定输出的总目录
         def baseOutputDir = channelExtension.baseOutputDir
         if (baseOutputDir == null) {
-            baseOutputDir = new File(project.getRootDir(), ChannelConfig.defaultOutputDirName)
+            baseOutputDir = new File(project.getRootDir(), ChannelConfig.DEFAULT_OUTPUT_DIR_NAME)
         }
 
         //5.确定输出的子目录,目录不存在则创建,存在则删除旧的apk包
@@ -150,82 +146,29 @@ class ApkChannelTask extends DefaultTask {
         return config
     }
 
-    private void generateChannelApk() {
-        if (SignatureMode.V1_MODE == signatureMode) {
-            generateV1ChannelApk()
-        } else if (SignatureMode.V2_MODE == signatureMode) {
-            generateV2ChannelApk()
-        } else {
-            throw new Exception("-------channel plugin: read signature fail--------")
-        }
-    }
-
     /**
-     * generate apk with V1 signature
+     * 反编译->修改Manifest->编译->重新签名->删除temp文件或目录
      */
-    private void generateV1ChannelApk() {
-        if (!V1ChannelUtil.containV1Signature(baseApk)) {
-            throw new GradleException("apk not signed by v1 , please check your signingConfig , if not have v1 signature , you can't install Apk below 7.0")
-        }
-        for (int i = 0; i < channelList.size(); i++) {
-            String channelApkName = initChannelApkName(i)
-            File destApk = new File(outputDir, channelApkName)
-            FileUtil.copyTo(baseApk, destApk)
-            String channel = channelList.get(i)
-            V1ChannelUtil.addChannelByV1(destApk, channel)
-            if (!channelExtension.fastMode) {
-                //校验渠道信息
-                if (V1ChannelUtil.verifyChannelByV1(destApk, channel)) {
-                    println "------channel plugin: v1 channel verify success--------"
-                } else {
-                    throw new GradleException("------channel plugin: v1 channel verify fail--------")
-                }
+    private void rebuildApk() {
 
-                //校验签名信息
-                if (V1ChannelUtil.verifySignatureByV1(destApk)) {
-                    println "------channel plugin: v1 signature verify success--------"
-                } else {
-                    throw new GradleException("------channel plugin: v1 signature verify fail--------")
-                }
-            }
-        }
+        File file = new File(outputDir.getPath(), "apk_decoded_temp")
+        println "file exist(): " + file.exists()
 
-    }
+        File tempDecodedDir = ApkToolUtil.decodeApk(baseApk, outputDir)
 
-    /**
-     * generate apk with V2&V1 signature
-     */
-    private void generateV2ChannelApk() {
-        ApkSectionInfo apkSectionInfo = new ApkSectionInfo(baseApk)
-        println outputDir
-        for (int i = 0; i < channelList.size(); i++) {
-            String channelApkName = initChannelApkName(i)
-            File destApk = new File(outputDir, channelApkName)
-            FileUtil.copyTo(baseApk, destApk)
-            //V1ChannelUtil.addChannelByV1(destApk, channel)
-            V2ChannelUtil.addChannelByV2(apkSectionInfo, destApk, channelList.get(i))
-            if (!channelExtension.fastMode) {
-                //校验渠道信息
-                if (V2ChannelUtil.verifyChannelByV2(destApk)) {
-                    println "------channel plugin: v2 channel verify success--------"
-                } else {
-                    throw new GradleException("------channel plugin: v2 channel verify fail--------")
-                }
-                //校验签名信息
-                if (V2ChannelUtil.verifySignatureByV2(destApk)) {
-                    println "------channel plugin: v2 signature verify success--------"
-                } else {
-                    throw new GradleException("------channel plugin: v2 signature verify fail--------")
-                }
-            }
-        }
-    }
 
-    /**
-     * generate apk with both V1/V2 signature
-     */
-    private void generateV1V2ChannelApk() {
 
+//        if (!file.exists() || !file.isDirectory()) {
+//            if (file.mkdirs()) {
+//                println "apk dir create success"
+//            } else {
+//                println "create apk dir fail"
+//            }
+//        }
+
+
+//        File tempUnsignedApk = ApkToolUtil.buildUnsignedApk(tempDecodedDir, outputDir)
+//        ApkSignerUtil.signApk(tempUnsignedApk,)
     }
 
     /**
@@ -240,7 +183,7 @@ class ApkChannelTask extends DefaultTask {
         def propVersionName = propDefaultConfig.properties.get('versionName')
 
         StringBuilder stringBuilder = new StringBuilder()
-        stringBuilder.append(ChannelConfig.APP_NAME)
+        stringBuilder.append(project.getProjectDir().getName())
         stringBuilder.append("_")
         stringBuilder.append("v")
         stringBuilder.append(propVersionName.toString())
@@ -256,7 +199,6 @@ class ApkChannelTask extends DefaultTask {
 
         println "-------channel plugin:${stringBuilder}---------"
         return stringBuilder.toString()
-
     }
 
 }
