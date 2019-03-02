@@ -91,15 +91,11 @@ class ChannelApkPlugin implements Plugin<Project> {
 
                 dirName = variant.dirName
                 variantName = variant.name.capitalize()
-                println "----------dirName : ${dirName}-------------"
-                println "----------variantName : ${variantName}-------------"
-                println "----------buildType : ${variant.buildType.name}-------------"
-
 
                 if (BuilderConstants.RELEASE.equalsIgnoreCase(variant.buildType.name)){
                     mApkChannelTask = mProject.tasks.create("channel${variantName} ", ApkChannelTask)
                     mApkChannelTask.setGroup("channel")
-//                    mApkChannelTask.dependsOn variant.assemble
+                    mApkChannelTask.dependsOn variant.assemble
                     mApkChannelTask.variant = variant
                     mApkChannelTask.channelExtension = mChannelExtension
                     mApkChannelTask.channelList = mChannelInfoList
