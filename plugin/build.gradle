@@ -1,26 +1,29 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply plugin: 'org.springframework.boot'
 
 //文档目录
 def DOC_DIR = "../javadoc/channel-plugin/" + rootProject.VERSION_ID + "/"
 //文档标题
 def DOC_TITLE = "channel-plugin"
 
-
-jar{
+//自定义打jar包要包含的第三方类
+jar {
 //    manifest{
 //        attributes("Class-Path": "apktool.jar")
 //    }
 //    from ('build/classes')
     from project.zipTree('libs/apksigner.jar')
     from project.zipTree('libs/apktool.jar')
-    include ('/**/org.royole.channel.properties')
-    include ('com/royole/plugin/**/*.class')
-//    include ('com/android/apksig/**/*.class')
-//    include ('com/android/apksigner/**/*.class')
-    include ('brut/**/*.class')
-//    include ('com/google/common/**/*.class')
+    include('/**/org.royole.channel.properties')
+    include('com/royole/plugin/**/*.class')
+    include('com/android/apksig/**/*.class')
+    include('com/android/apksigner/**/*.class')
+    include('brut/**/*.class')
+    include('org/**/*.class')
+    include('prebuilt/**/*')
+    include('com/google/common/**/*.class')
+    exclude('com/google/')
+
 }
 
 // 打包源文件
