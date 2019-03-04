@@ -1,33 +1,56 @@
 package com.royole.plugin.helper
 
+import groovy.xml.Namespace
 import groovy.xml.XmlUtil
+import org.gradle.api.GradleException
+import org.w3c.dom.NodeList
 
+
+/**
+ * @author Hongzhi Liu
+ * @date 2019/3/1
+ */
 class AndroidManifestHelper {
 
-    static final String CHANNEL_META_DATA = "Channel"
+    static final String META_DATA_CHANNEL = "Channel"
+
+    static final namespace = new Namespace('http://schemas.android.com/apk/res/android','android')
 
     File manifest
 
     Node root
 
-    AndroidManifestHelper(File manifestFile){
+    AndroidManifestHelper(File androidManifest) {
         XmlParser xmlParser = new XmlParser()
-        root = xmlParser.parse(manifestFile)
-        manifest = manifestFile
-    }
-
-
-    void addOrUpdateChannelMetaData(String channel){
-        def applicationNode = manifest.application[0]
-        List<Node> metaDatas = applicationNode.'meta-data'
-
+        root = xmlParser.parse(androidManifest)
+        manifest = androidManifest
     }
 
 
     /**
-     * 将内存中对manifest的修改写入文件
+     * 在application节点下添加或更新<meta-data android:name="channel" />的节点
+     * @param androidName
+     * @param androidValue
      */
-    void save(){
+    void addOrUpdateChannelMetaData(String androidValue) {
+        def applicationNode = root.application[0]
+        if (null == applicationNode) {
+            throw new GradleException("Channel plugin: cant find <application> xml node in AndroidManifest")
+        }
+        List<Node> metaDataList = applicationNode.'meta-data'
+        for(Node node:metaDataList){
+            if (META_DATA_CHANNEL.equals(node.attribute(namespace.name))){
+                applicationNode.remove(node)
+                println "remove node"
+            }
+        }
+        applicationNode.appendNode("meta-data", ["android:name": AndroidManifestHelper.META_DATA_CHANNEL, "android:value": androidValue])
+    }
+
+    /**
+     * 注意内存中改完后必须写回到外存
+     */
+    void save() {
         manifest.write(XmlUtil.serialize(root))
     }
 }

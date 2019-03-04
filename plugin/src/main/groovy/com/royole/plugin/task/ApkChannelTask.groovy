@@ -3,8 +3,9 @@ package com.royole.plugin.task
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
 import com.royole.plugin.constants.ChannelConfig
-import com.royole.plugin.constants.SignatureMode
 import com.royole.plugin.extension.ChannelExtension
+import com.royole.plugin.helper.AndroidManifestHelper
+import com.royole.plugin.util.ApkSignerUtil
 import com.royole.plugin.util.ApkToolUtil
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -22,8 +23,7 @@ class ApkChannelTask extends DefaultTask {
     /**
      * 签名模式
      */
-    @Input
-    int signatureMode
+    SigningConfig signingConfig
 
     /**
      * BaseVariant
@@ -45,7 +45,6 @@ class ApkChannelTask extends DefaultTask {
     /**
      * 输出的子目录(debug/release)
      */
-
     private File outputDir
 
     /**
@@ -62,10 +61,6 @@ class ApkChannelTask extends DefaultTask {
     def channel() {
         checkParameter()
         checkSignature()
-        channelList.each { String a ->
-            println a
-        }
-        println "-----------rebuildApk2222------------"
         rebuildApk()
     }
 
@@ -76,19 +71,19 @@ class ApkChannelTask extends DefaultTask {
 
         //1.确定各渠道的信息
         if (channelList == null || channelList.isEmpty()) {
-            throw new GradleException("----------channel plugin: no channel info specified-------------")
+            throw new GradleException("channel plugin: no channel info specified-------------")
         }
 
         //2.确定variant
         if (variant == null) {
-            throw new GradleException("----------channel plugin: read variant is null-------------")
+            throw new GradleException("channel plugin: read variant is null-------------")
         }
 
         //3.确定基础的apk包
         baseApk = variant.outputs.first().outputFile
         println "---------channel plugin: base apk path is ${baseApk.absolutePath}-------"
         if (baseApk == null || !baseApk.exists() || !baseApk.isFile()) {
-            throw new GradleException("----------channel plugin: couldn't find baseApk-------------")
+            throw new GradleException("channel plugin: couldn't find baseApk-------------")
         }
 
         //4.确定输出的总目录
@@ -97,23 +92,20 @@ class ApkChannelTask extends DefaultTask {
             baseOutputDir = new File(project.getRootDir(), ChannelConfig.DEFAULT_OUTPUT_DIR_NAME)
         }
 
-        //5.确定输出的子目录,目录不存在则创建,存在则删除旧的apk包
+        //5.确定输出的子目录,目录不存在则创建,存在则删除旧的目录并创建
         outputDir = new File(baseOutputDir, variant.dirName)
-        if (!outputDir.exists()) {
+        if (outputDir.deleteDir()) {
             outputDir.mkdirs()
         } else {
-            outputDir.eachFile { file ->
-                file.delete()
-            }
+            throw new GradleException("channel plugin: unable to delete directory: " + outputDir.path)
         }
-
     }
 
     /**
      * 检查project 的gradle 中的签名配置
      */
     private void checkSignature() {
-        SigningConfig signingConfig = initSigningConfig()
+        initSigningConfig()
         if (signingConfig == null) {
             throw new GradleException("SigningConfig is null , please check it")
         }
@@ -121,62 +113,92 @@ class ApkChannelTask extends DefaultTask {
         //This task prefer to write only V2 signature on the apk while v2&v1 signature is enabled
         //But if v2 signature is enabled and v1 signature is disabled, this task will throw an exception
         //apk without V1 signature can't be installed on the device with Android system below 7.0
-        if (signingConfig.hasProperty("v2SigningEnabled") && signingConfig.v2SigningEnabled) {
-            if (signingConfig.hasProperty("v1SigningEnabled") && !signingConfig.v1SigningEnabled) {
+        if ((signingConfig.hasProperty("v1SigningEnabled") && !signingConfig.v1SigningEnabled)) {
+            if (signingConfig.hasProperty("v2SigningEnabled") && !signingConfig.v2SigningEnabled) {
+                throw new GradleException("you must assign V1 or V2 Mode")
+            } else {
                 throw new GradleException("you only assign V2 Mode , but not assign V1 Mode , you can't install Apk below 7.0")
             }
-            signatureMode = SignatureMode.V2_MODE
-        } else if ((signingConfig.hasProperty("v1SigningEnabled") && signingConfig.v1SigningEnabled) || !signingConfig.hasProperty("v1SigningEnabled")) {
-            signatureMode = SignatureMode.V1_MODE
-        } else {
-            throw new GradleException("you must assign V1 or V2 Mode")
         }
     }
 
     /**
      * 获取签名设置
      */
-    private SigningConfig initSigningConfig() {
-        SigningConfig config
+    private void initSigningConfig() {
         if (variant.buildType.signingConfig == null) {
-            config = variant.mergedFlavor.signingConfig
+            signingConfig = variant.mergedFlavor.signingConfig
         } else {
-            config = variant.buildType.signingConfig
+            signingConfig = variant.buildType.signingConfig
         }
-        return config
     }
 
     /**
      * 反编译->修改Manifest->编译->重新签名->删除temp文件或目录
      */
     private void rebuildApk() {
-
-        File file = new File(outputDir.getPath(), "apk_decoded_temp")
-        println "file exist(): " + file.exists()
-
+        //反编译
         File tempDecodedDir = ApkToolUtil.decodeApk(baseApk, outputDir)
+        File androidManifest = ApkToolUtil.getManifestFromDecodeDir(tempDecodedDir)
 
+        for (String channel : channelList) {
+            String apkName = initChannelApkName(channel)
 
+            //修改Manifest
+            modifyAndroidManifest(androidManifest, channel)
 
-//        if (!file.exists() || !file.isDirectory()) {
-//            if (file.mkdirs()) {
-//                println "apk dir create success"
-//            } else {
-//                println "create apk dir fail"
-//            }
-//        }
+            //重新打apk包
+            File tempUnsignedApk = ApkToolUtil.buildUnsignedApk(tempDecodedDir, outputDir)
 
+            //签名
+            ApkSignerUtil.signApk(tempUnsignedApk, outputDir, apkName, signingConfig)
 
-//        File tempUnsignedApk = ApkToolUtil.buildUnsignedApk(tempDecodedDir, outputDir)
-//        ApkSignerUtil.signApk(tempUnsignedApk,)
+            //清除未签名的apk
+            if (!tempUnsignedApk.delete()) {
+                throw new GradleException("unable to delete unsigned apk after signature: " + tempUnsignedApk.path)
+            }
+        }
+
+        //清除反编译生成的文件夹
+        clearTempOutput()
     }
+
+
+    /**
+     * 自定义对反编译后的的AndroidManifest的修改
+     * @param manifestFile
+     */
+    private void modifyAndroidManifest(File manifestFile, String channel) {
+        AndroidManifestHelper androidManifestHelper = new AndroidManifestHelper(manifestFile)
+        androidManifestHelper.addOrUpdateChannelMetaData(channel)
+        androidManifestHelper.save()
+    }
+
+    /**
+     * 清除rebuild过程中的所有temp文件，包括：
+     * 1. 反编译源apk产生的目录
+     * 2. 为apktool工具指定的Frame目录
+     * 3. 产生的各个未签名的渠道apk文件
+     *
+     */
+    private void clearTempOutput() {
+        File tempDecodedDir = new File(outputDir, ApkToolUtil.DECODED_APK_DIR)
+        File tempDecodedFrameworkDir = new File(outputDir, ApkToolUtil.TEMP_FRAME_PATH)
+        if (!tempDecodedDir.deleteDir()) {
+            throw new GradleException("unable to delete directory after signature: " + tempDecodedDir.path)
+        }
+        if (!tempDecodedFrameworkDir.deleteDir()) {
+            throw new GradleException("unable to delete directory after signature: " + tempDecodedFrameworkDir.path)
+        }
+    }
+
 
     /**
      * 获取渠道包名称
      * 读取gradle 中的versionCode 和versionName
      * 渠道包名格式默认为 "project + '_' + channel + '_' + debug/release + '_' + version"
      */
-    private String initChannelApkName(int index) {
+    private String initChannelApkName(String channel) {
         def extAndroid = project.extensions.getByName("android")
         def propDefaultConfig = extAndroid.properties.get('defaultConfig')
         def propVersionCode = propDefaultConfig.properties.get('versionCode')
@@ -190,14 +212,10 @@ class ApkChannelTask extends DefaultTask {
         stringBuilder.append("_")
         stringBuilder.append(propVersionCode)
         stringBuilder.append("_")
-        stringBuilder.append(index)
-        stringBuilder.append("_")
-        stringBuilder.append(channelList.get(index))
+        stringBuilder.append(channel)
         stringBuilder.append("_")
         stringBuilder.append("sign")
         stringBuilder.append(".apk")
-
-        println "-------channel plugin:${stringBuilder}---------"
         return stringBuilder.toString()
     }
 

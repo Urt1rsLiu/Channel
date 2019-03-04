@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 ext{
     GROUP_ID = 'com.royole'
-    VERSION_ID = '2.0.18'
+    VERSION_ID = '2.0.1'
     javaVersion = JavaVersion.VERSION_1_8
     minSdkVersion = 14
     compileSdkVersion = 26
@@ -9,7 +9,7 @@ ext{
     buildToolsVersion = '26.0.2'
     
 
-    POM_PACKAGING='aar' // 打包成aar
+//    POM_PACKAGING='aar' 
 
     POM_DESCRIPTION='project lib for Android'   // 项目描述
 

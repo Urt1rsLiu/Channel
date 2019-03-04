@@ -6,39 +6,38 @@ def DOC_DIR = "../javadoc/channel-plugin/" + rootProject.VERSION_ID + "/"
 //文档标题
 def DOC_TITLE = "channel-plugin"
 
-//自定义打jar包要包含的第三方类
+// 自定义打jar包的过程，导入第三方jar的内置相关资源
+// 注意去除与android plugin重复的class（会导致原本的android工程Sync失败）
 jar {
 //    manifest{
 //        attributes("Class-Path": "apktool.jar")
 //    }
 //    from ('build/classes')
-    from project.zipTree('libs/apksigner.jar')
+
+    description "packaging project to jar file"
     from project.zipTree('libs/apktool.jar')
+    from project.zipTree('libs/apksigner.jar')
     include('/**/org.royole.channel.properties')
+    include('/**/properties/apktool.properties')
+    include('android/**/*.class')
     include('com/royole/plugin/**/*.class')
+    include('org/**/*.class')
+    include('brut/**/*.class')
+    //apktool内置的多平台aapt工具
+    include('prebuilt/**/*')
+    include('brut/androlib/android-framework.jar')
     include('com/android/apksig/**/*.class')
     include('com/android/apksigner/**/*.class')
-    include('brut/**/*.class')
-    include('org/**/*.class')
-    include('prebuilt/**/*')
-    include('com/google/common/**/*.class')
-    exclude('com/google/')
-
+    exclude('org/apache/commons/io/FileUtils.class')
+    exclude('org/apache/commons/io/IOUtils.class')
 }
 
 // 打包源文件
-task sourcesJar(type: Jar, dependsOn: classes) {
+task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
     classifier = 'sources'
 }
 
-sourceSets {
-    main {
-        groovy {
-            srcDir 'src/main/groovy'
-        }
-    }
-}
 
 //task javadocs(type: Javadoc) {
 //    doFirst {
@@ -108,10 +107,6 @@ compileGroovy {
     options.encoding = "UTF-8"
 }
 
-compileJava {
-    options.encoding = "UTF-8"
-}
-
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
@@ -120,5 +115,4 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
     implementation 'com.android.tools.build:gradle:3.0.1'
-    testImplementation 'junit:junit:4.12'
 }
